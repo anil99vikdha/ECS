@@ -21,6 +21,8 @@ db_config = {
     "database": os.getenv("MYSQL_DATABASE"),
 }
 
+AWS_REGON = os.getenv("AWS_REGION", "ap-south-1")
+
 def get_db():
     return mysql.connector.connect(**db_config)
 
@@ -64,7 +66,7 @@ button{background:#2563eb;color:white;padding:14px 32px;border:none;border-radiu
 {% for p in products %}
   <div class="product-card">
     {% if p.image_url %}
-      <img src="{{ p.image_url }}" class="product-image" alt="Product Image"
+      <img src="{{ p.image_url }}" class="product-image" alt="Product Image" 
            onerror="this.style.display='none'; this.parentNode.querySelector('.product-no-image')?.style.display='flex';">
       <div class="product-no-image" style="display: none;">No Image Available</div>
     {% else %}
@@ -102,15 +104,15 @@ def dashboard():
 
                 s3 = boto3.client(
                     "s3",
-                    region_name="us-east-1",
+                    region_name=AWS_REGON,
                     config=botocore.config.Config(
-                        region_name="us-east-1",
+                        region_name=AWS_REGON,
                         signature_version="s3v4",
                         s3={"addressing_style": "path"},
                     ),
                 )
 
-                bucket = os.environ.get("S3_BUCKET")
+                bucket = os.environ.get("S3_BUCKET", "trainxops-products")
                 cf_domain = os.environ.get("CLOUDFRONT_DOMAIN", "")  # dxxxxx.cloudfront.net
 
                 ext = os.path.splitext(image.filename)[1][:5]
@@ -131,7 +133,7 @@ def dashboard():
                 if cf_domain:
                     image_url = f"https://{cf_domain}/{key}"
                 else:
-                    image_url = f"https://{bucket}.s3.us-east-1.amazonaws.com/{key}"
+                    image_url = f"https://{bucket}.s3.{AWS_REGON}.amazonaws.com/{key}"
 
                 print(f"✅ Image URL: {image_url}")
                 success_msg = f"✅ Product '{name}' added with image!"
